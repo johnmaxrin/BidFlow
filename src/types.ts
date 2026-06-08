@@ -43,6 +43,7 @@ export interface WhatsAppApiConfig {
   twilioToken: string;
   twilioFrom: string;
   integrationType: "none" | "cloud_api" | "twilio";
+  isSystemTwilioConfigured?: boolean;
 }
 
 export interface SimMessage {

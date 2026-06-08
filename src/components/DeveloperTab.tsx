@@ -78,48 +78,61 @@ export function DeveloperTab({ config, onSaveConfig }: DeveloperTabProps) {
             </div>
           </div>
 
-          {saveSuccess && (
+          {config.isSystemTwilioConfigured ? (
+            <div className="bg-emerald-950/20 border border-emerald-900/60 text-emerald-300 p-4.5 rounded-2xl text-xs flex flex-col gap-2 animate-fadeIn">
+              <div className="flex items-center gap-2 font-bold text-[11px] uppercase tracking-wider text-emerald-400">
+                <CheckCircle2 className="w-4.5 h-4.5 text-emerald-405 shrink-0" />
+                <span>Default Twilio Gateway Connected</span>
+              </div>
+              <p className="text-[10px] text-slate-400 leading-relaxed">
+                A system-wide Twilio API integration is securely configured by the administrator. Conversations automatically route quotes to cellphones. All interactive bids and listings are fully enabled without further setup!
+              </p>
+            </div>
+          ) : saveSuccess ? (
             <div className="bg-emerald-950/40 border border-emerald-900 text-emerald-300 p-4 rounded-xl text-xs flex items-center gap-2.5 animate-fadeIn">
               <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
               <span>WhatsApp live credentials synchronized and saved to secure node servers!</span>
             </div>
-          )}
+          ) : null}
 
           <div className="space-y-1.5">
             <label className="text-[11px] font-bold text-slate-400 uppercase block tracking-wider">Gateway Integration Mode</label>
             <div className="grid grid-cols-3 gap-2">
               <button
                 type="button"
+                disabled={!!config.isSystemTwilioConfigured}
                 onClick={() => setIntegrationType("none")}
                 className={`p-3 rounded-xl border text-center font-semibold transition cursor-pointer text-xs ${
                   integrationType === "none"
                     ? "border-emerald-650 bg-emerald-600 text-white font-bold shadow-lg"
                     : "border-slate-800 bg-slate-950 hover:bg-slate-900 text-slate-400"
-                }`}
+                } ${config.isSystemTwilioConfigured ? "opacity-40 cursor-not-allowed" : ""}`}
               >
                 Sandbox Demo
               </button>
               
               <button
                 type="button"
+                disabled={!!config.isSystemTwilioConfigured}
                 onClick={() => setIntegrationType("cloud_api")}
                 className={`p-3 rounded-xl border text-center font-semibold transition cursor-pointer text-xs ${
                   integrationType === "cloud_api"
                     ? "border-emerald-650 bg-emerald-600 text-white font-bold shadow-lg"
                     : "border-slate-800 bg-slate-950 hover:bg-slate-900 text-slate-400"
-                }`}
+                } ${config.isSystemTwilioConfigured ? "opacity-40 cursor-not-allowed" : ""}`}
               >
                 Meta Cloud API
               </button>
 
               <button
                 type="button"
+                disabled={!!config.isSystemTwilioConfigured}
                 onClick={() => setIntegrationType("twilio")}
                 className={`p-3 rounded-xl border text-center font-semibold transition cursor-pointer text-xs ${
                   integrationType === "twilio"
                     ? "border-emerald-650 bg-emerald-600 text-white font-bold shadow-lg"
                     : "border-slate-800 bg-slate-950 hover:bg-slate-900 text-slate-400"
-                }`}
+                } ${config.isSystemTwilioConfigured ? "border-emerald-900/40 bg-emerald-950/20 text-emerald-400 font-bold" : ""}`}
               >
                 Twilio WhatsApp
               </button>
@@ -148,10 +161,11 @@ export function DeveloperTab({ config, onSaveConfig }: DeveloperTabProps) {
                 <label className="text-[11px] font-bold text-slate-400 uppercase block tracking-wider">Permanent System User Token</label>
                 <input
                   type="password"
+                  disabled={!!config.isSystemTwilioConfigured}
                   value={accessToken}
                   onChange={(e) => setAccessToken(e.target.value)}
                   placeholder="EAABw..."
-                  className="w-full text-xs bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl p-3 text-slate-200 placeholder:text-slate-700 focus:outline-none"
+                  className="w-full text-xs bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl p-3 text-slate-200 placeholder:text-slate-705 focus:outline-none disabled:opacity-50"
                 />
                 <span className="text-[9px] text-slate-500">Acquire from Meta App Dashboard Configuration</span>
               </div>
@@ -161,10 +175,11 @@ export function DeveloperTab({ config, onSaveConfig }: DeveloperTabProps) {
                   <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest block">Phone ID</label>
                   <input
                     type="text"
+                    disabled={!!config.isSystemTwilioConfigured}
                     value={phoneId}
                     onChange={(e) => setPhoneId(e.target.value)}
                     placeholder="e.g. 109823612841"
-                    className="w-full text-xs bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl p-3 text-slate-200 placeholder:text-slate-700 focus:outline-none"
+                    className="w-full text-xs bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl p-3 text-slate-200 placeholder:text-slate-705 focus:outline-none disabled:opacity-50"
                   />
                 </div>
                 <div className="space-y-1">
@@ -172,10 +187,11 @@ export function DeveloperTab({ config, onSaveConfig }: DeveloperTabProps) {
                   <input
                     type="text"
                     required
+                    disabled={!!config.isSystemTwilioConfigured}
                     value={verifyToken}
                     onChange={(e) => setVerifyToken(e.target.value)}
                     placeholder="whatsapp_bidding_token_123"
-                    className="w-full text-xs bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl p-3 text-slate-200 placeholder:text-slate-750 focus:outline-none"
+                    className="w-full text-xs bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl p-3 text-slate-200 placeholder:text-slate-750 focus:outline-none disabled:opacity-50"
                   />
                 </div>
               </div>
@@ -193,10 +209,11 @@ export function DeveloperTab({ config, onSaveConfig }: DeveloperTabProps) {
                 <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest block">Twilio Account SID</label>
                 <input
                   type="text"
+                  disabled={!!config.isSystemTwilioConfigured}
                   value={twilioSid}
                   onChange={(e) => setTwilioSid(e.target.value)}
                   placeholder="AC..."
-                  className="w-full text-xs bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl p-3 text-slate-200 placeholder:text-slate-700 focus:outline-none"
+                  className="w-full text-xs bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl p-3 text-slate-200 placeholder:text-slate-705 focus:outline-none disabled:opacity-60 font-mono"
                 />
               </div>
 
@@ -204,10 +221,11 @@ export function DeveloperTab({ config, onSaveConfig }: DeveloperTabProps) {
                 <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest block">Auth Token</label>
                 <input
                   type="password"
+                  disabled={!!config.isSystemTwilioConfigured}
                   value={twilioToken}
                   onChange={(e) => setTwilioToken(e.target.value)}
                   placeholder="••••••••••••••••"
-                  className="w-full text-xs bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl p-3 text-slate-200 placeholder:text-slate-750 focus:outline-none"
+                  className="w-full text-xs bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl p-3 text-slate-200 placeholder:text-slate-750 focus:outline-none disabled:opacity-60"
                 />
               </div>
 
@@ -215,24 +233,32 @@ export function DeveloperTab({ config, onSaveConfig }: DeveloperTabProps) {
                 <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest block">WhatsApp From Number</label>
                 <input
                   type="text"
+                  disabled={!!config.isSystemTwilioConfigured}
                   value={twilioFrom}
                   onChange={(e) => setTwilioFrom(e.target.value)}
                   placeholder="e.g. +14155238886"
-                  className="w-full text-xs bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl p-3 text-slate-200 placeholder:text-slate-700 focus:outline-none"
+                  className="w-full text-xs bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl p-3 text-slate-200 placeholder:text-slate-705 focus:outline-none disabled:opacity-60 font-mono"
                 />
               </div>
             </div>
           )}
 
           <div className="pt-3 border-t border-slate-800 flex justify-end">
-            <button
-              id="save-dev-settings"
-              type="submit"
-              className="flex items-center gap-1.5 px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl transition cursor-pointer shadow-lg"
-            >
-              <Save className="w-4 h-4" />
-              Save Settings
-            </button>
+            {config.isSystemTwilioConfigured ? (
+              <span className="flex items-center gap-1.5 px-4 py-2 text-[10px] font-bold font-mono uppercase tracking-wider text-emerald-400 bg-emerald-950/20 border border-emerald-900/30 rounded-xl">
+                <Check className="w-3.5 h-3.5" />
+                Active & Secured By Environment
+              </span>
+            ) : (
+              <button
+                id="save-dev-settings"
+                type="submit"
+                className="flex items-center gap-1.5 px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl transition cursor-pointer shadow-lg"
+              >
+                <Save className="w-4 h-4" />
+                Save Settings
+              </button>
+            )}
           </div>
         </form>
       </div>

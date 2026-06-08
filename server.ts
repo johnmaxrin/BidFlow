@@ -148,10 +148,10 @@ let apiConfig: WhatsAppApiConfig = {
   accessToken: "",
   phoneId: "",
   verifyToken: "whatsapp_bidding_token_123",
-  twilioSid: "",
-  twilioToken: "",
-  twilioFrom: "",
-  integrationType: "none"
+  twilioSid: process.env.TWILIO_SID || "",
+  twilioToken: process.env.TWILIO_TOKEN || "",
+  twilioFrom: process.env.TWILIO_FROM || "",
+  integrationType: (process.env.TWILIO_SID && process.env.TWILIO_TOKEN && process.env.TWILIO_FROM) ? "twilio" : "none"
 };
 
 // Initialize Gemini Client Lazily if requested
@@ -177,7 +177,14 @@ function getGemini(): any {
 // Helper to send real WhatsApp message via Meta Cloud API or Twilio if credentials exist
 async function sendExternalWhatsAppNotification(recipient: string, message: string) {
   try {
-    if (apiConfig.integrationType === "cloud_api" && apiConfig.phoneId && apiConfig.accessToken) {
+    const twilioSid = process.env.TWILIO_SID || apiConfig.twilioSid;
+    const twilioToken = process.env.TWILIO_TOKEN || apiConfig.twilioToken;
+    const twilioFrom = process.env.TWILIO_FROM || apiConfig.twilioFrom;
+    
+    const isSystemConfigured = !!(process.env.TWILIO_SID && process.env.TWILIO_TOKEN && process.env.TWILIO_FROM);
+    const activeIntegration = isSystemConfigured ? "twilio" : apiConfig.integrationType;
+
+    if (activeIntegration === "cloud_api" && apiConfig.phoneId && apiConfig.accessToken) {
       console.log(`[REAL META API] Posting WhatsApp message to ${recipient}...`);
       const response = await fetch(`https://graph.facebook.com/v18.0/${apiConfig.phoneId}/messages`, {
         method: "POST",
@@ -202,14 +209,14 @@ async function sendExternalWhatsAppNotification(recipient: string, message: stri
         return false;
       }
       return true;
-    } else if (apiConfig.integrationType === "twilio" && apiConfig.twilioSid && apiConfig.twilioToken && apiConfig.twilioFrom) {
-      console.log(`[REAL TWILIO API] Sending WhatsApp to WhatsApp:${recipient}...`);
-      const basicAuth = Buffer.from(`${apiConfig.twilioSid}:${apiConfig.twilioToken}`).toString("base64");
-      const url = `https://api.twilio.com/2010-04-01/Accounts/${apiConfig.twilioSid}/Messages.json`;
+    } else if (activeIntegration === "twilio" && twilioSid && twilioToken && twilioFrom) {
+      console.log(`[REAL TWILIO API] Sending WhatsApp to WhatsApp:${recipient} (System Configured: ${isSystemConfigured})...`);
+      const basicAuth = Buffer.from(`${twilioSid}:${twilioToken}`).toString("base64");
+      const url = `https://api.twilio.com/2010-04-01/Accounts/${twilioSid}/Messages.json`;
       
       const payload = new URLSearchParams({
         To: `whatsapp:${recipient}`,
-        From: `whatsapp:${apiConfig.twilioFrom}`,
+        From: `whatsapp:${twilioFrom}`,
         Body: message
       });
       
@@ -610,19 +617,27 @@ app.post("/api/whatsapp/simulate", async (req, res) => {
 
 // 6. Config Handlers (Save credentials)
 app.get("/api/whatsapp/config", (req, res) => {
+  const isSys = !!(process.env.TWILIO_SID && process.env.TWILIO_TOKEN && process.env.TWILIO_FROM);
+  
   // Return config with masked values for security!
   res.json({
     accessToken: apiConfig.accessToken ? "••••••••••••" : "",
     phoneId: apiConfig.phoneId,
     verifyToken: apiConfig.verifyToken,
-    twilioSid: apiConfig.twilioSid,
-    twilioToken: apiConfig.twilioToken ? "••••••••••••" : "",
-    twilioFrom: apiConfig.twilioFrom,
-    integrationType: apiConfig.integrationType
+    twilioSid: isSys ? "••••••••••••" : apiConfig.twilioSid,
+    twilioToken: (isSys || apiConfig.twilioToken) ? "••••••••••••" : "",
+    twilioFrom: isSys ? (process.env.TWILIO_FROM || "").replace(/.(?=.{4})/g, "•") : apiConfig.twilioFrom,
+    integrationType: isSys ? "twilio" : apiConfig.integrationType,
+    isSystemTwilioConfigured: isSys
   });
 });
 
 app.post("/api/whatsapp/config", (req, res) => {
+  const isSys = !!(process.env.TWILIO_SID && process.env.TWILIO_TOKEN && process.env.TWILIO_FROM);
+  if (isSys) {
+    return res.status(403).json({ error: "System-wide Twilio Integration is securely managed by the server and cannot be programmatically changed." });
+  }
+
   const { accessToken, phoneId, verifyToken, twilioSid, twilioToken, twilioFrom, integrationType } = req.body;
   
   if (accessToken && accessToken !== "••••••••••••") apiConfig.accessToken = accessToken;
