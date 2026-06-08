@@ -1,0 +1,6 @@
+{
+  "name": "WhatsApp Bidding Bot",
+  "description": "List items, place bids, and receive instant notifications directly inside WhatsApp with structured bid state tracking, automated outbid notifications, and natural language Gemini bid parsing.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
